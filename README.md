@@ -20,11 +20,9 @@ SYNOPSIS
     - Uses System Default List Separator Character and Quotes to simplify CSV processing.
      
 SYNTAX
-    C:\Get-Domain-MailInfo.ps1 [-Name <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelec
-    tor <String>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
+    C:\>Get-Domain-MailInfo.ps1 [-Name <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
     
-    C:\Get-Domain-MailInfo.ps1 [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelec
-    tor <String>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
+    C:\>Get-Domain-MailInfo.ps1 [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
     
 PARAMETERS
     -Name <String>
