@@ -1,6 +1,6 @@
 # PSGet-Domain-MailInfo
-PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC.
-
+PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC 
+```
 PS C:\> Get-Help .\Get-Domain-MailInfo.ps1 -Full
 
 NAME
@@ -141,3 +141,4 @@ PARAMETERS
     
 RELATED LINKS
     https://github.com/dotBATmanNO/PSGet-Domain-MailInfo/
+```
