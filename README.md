@@ -4,7 +4,7 @@ PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC
 PS C:\> Get-Help .\Get-Domain-MailInfo.ps1 -Full
 
 NAME
-    C:\Users\Tor\Documents\prog\PowerShell\GetDomainMailInfo\Get-Domain-MailInfo.ps1
+    C:\Get-Domain-MailInfo.ps1
     
 SYNOPSIS
     Get MailInfo for domain(s).
@@ -20,10 +20,10 @@ SYNOPSIS
     - Uses System Default List Separator Character and Quotes to simplify CSV processing.
      
 SYNTAX
-    C:\Users\Tor\Documents\prog\PowerShell\GetDomainMailInfo\Get-Domain-MailInfo.ps1 [-Name <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelec
+    C:\Get-Domain-MailInfo.ps1 [-Name <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelec
     tor <String>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
     
-    C:\Users\Tor\Documents\prog\PowerShell\GetDomainMailInfo\Get-Domain-MailInfo.ps1 [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelec
+    C:\Get-Domain-MailInfo.ps1 [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelec
     tor <String>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
     
 PARAMETERS
