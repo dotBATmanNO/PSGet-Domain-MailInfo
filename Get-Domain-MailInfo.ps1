@@ -172,7 +172,6 @@ Function fnDKIMRecord {
    
 } # End Function fnDKIMRecord
 
-
 Function fnDMARCRecord {
 
   param ([string]$domname)
@@ -198,6 +197,38 @@ Function fnDMARCRecord {
    }
 } # End Function fnDMARCrecord
 
+Function fnCheckCSVFileLock {
+  param ([string]$CSVFileName, [bool]$CreateFile)
+  
+  # Check if file exists
+  If (Test-Path -Path $CSVFileName -PathType Leaf)
+  {
+   # File Exists, can we write to it?
+   Try
+   {
+    $FileStream = [System.IO.File]::Open($CSVFileName,'Open','Write')
+   }
+   Catch
+   {
+    # File Write failed - must be locked
+    Write-Verbose ".. the script will not be able to output results to .CSV file"
+    Write-Verbose "   (Is the file still open in Excel or other program?)"
+    Return $true
+   }
+   
+   # File is not locked - Let's close it to leave it available
+   $FileStream.Close()
+   $FileStream.Dispose()
+   
+   # If we are not asked to create a blank file we are ready to return
+   If (-Not $CreateFile) { Return $false }
+  }
+   
+  New-Item -Path $CSVFileName -ItemType File -Force -InformationAction Ignore | Out-Null  
+  Return $false 
+
+}
+
 # Initialize Script
 # First step is to define script settings
 $ScriptPath = Split-Path -parent $PSCommandPath     # Use the folder the script was started from
@@ -210,41 +241,6 @@ If ($CheckDKIM -eq $False) { $DKIMSelector = ""}    # If DKIM is not checked we 
 $arrheader = """Domain", "HasMX", "HasSPF", "HasDKIM", "HasDMARC", 
              "MXRecord", "SPFRecord", "DKIMSelector", "DKIMRecord", "DMARCRecord"""
 $headerline = $arrheader -join """$($charlistsep)"""
-
-# Check If CSVFile is available for Write.
-# Softfail to run script without CSV.
-If ( Test-Path -Path $csvFile -PathType Leaf )
-{
- Try
- {
-  $FileStream = [System.IO.File]::Open($csvFile,'Open','Write')
- }
- Catch
- {
-  # File Write failed - must be locked
-  $bolCSV = $false
-  Write-Verbose ".. the script will not be able to output results to .CSV file"
-  Write-Verbose "   (Is the file still open in Excel or other program?)"
- }
- If ($bolCSV)
- {
-  # File Write possible - let's close the file before we cause the lock.
-  $FileStream.Close()
-  $FileStream.Dispose()
-  If ($Overwrite) 
-  { 
-   # Overwrite existing file with a new one
-   New-Item -Path $ScriptPath -Name "DomainResults.csv" -ItemType File -Force -InformationAction Ignore | Out-Null 
-   If ($UseHeader) { Add-Content -Path $csvFile -Value $headerline }
-  }
- }
-} # End Test-Path to see If file exists
-Else
-{
- # File does not exist, let's create it
- New-Item -Path $ScriptPath -Name "DomainResults.csv" -ItemType File -Force -InformationAction Ignore | Out-Null 
- If ($UseHeader) { Add-Content -Path $CSVFile -Value $headerline }
-}
 
 # Use array, even If only one domain has been provided
 If ($Path)
@@ -265,17 +261,21 @@ Write-Verbose " Script Get-Domain-MailInfo.ps1"
 Write-Verbose " Last Updated 2019-10-01"
 Write-Verbose ""
 Write-Verbose " Checking $($strDomainsToCheck) domain(s)"
-If ($CheckDKIM)
-{
- Write-Verbose " .. checking DKIM using selector $($DKIMSelector)"
- Write-Verbose ""
-}
-Else
-{
-  Write-Verbose ""
-  Write-Verbose ""
-}
+If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
 # End Script information Verbose block
+
+# Check If CSVFile Exists and if it is locked
+# If available - create new file if requested
+If (fnCheckCSVFileLock -CSVFileName $csvFile -CreateFile $Overwrite)
+{
+ # File exists and is locked.
+ # Softfail to run script with no output to CSV.
+ $bolCSV = $false
+}
+else
+{
+ If ($UseHeader) { Add-Content -Path $CSVFile -Value $headerline }
+} 
 
 If ($UseHeader) { Write-Host $headerline } 
 
