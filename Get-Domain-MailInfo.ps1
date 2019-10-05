@@ -178,7 +178,7 @@ Function fnDMARCRecord {
 
    Try
    {
-     $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT | Where-Object strings -Like "v=DMARC1*" 2> $null
+     $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT 2> $null
    }
    Catch
    {
@@ -188,7 +188,14 @@ Function fnDMARCRecord {
    If ($DMARCRecord.Strings)
    {
     $DMARCRec = $DMARCRecord | Select-Object -ExpandProperty Strings
-    Return $DMARCRec
+    If ($DMARCRec -like "v=DMARC1*") 
+    {
+     Return $DMARCRec
+    }
+    else
+    {
+     Return $False 
+    }
    }
    Else
    {
