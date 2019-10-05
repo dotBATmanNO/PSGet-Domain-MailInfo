@@ -66,7 +66,7 @@ Function fnIsDomain {
    
    Try
    {
-    $DNSRecord = Resolve-DnsName -Name $domname 2> $null
+    $DNSRecord = Resolve-DnsName -Name $domname -DnsOnly -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -82,7 +82,7 @@ Function fnIsDomain {
     # Source https://stackoverflow.com/questions/11809631/ 
     If ($domname -notmatch "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)")
     {
-     Write-Verbose "Fail: Domain lookup failed - probable invalid domain name ($domname)"
+     Write-Verbose "[INVALID:] Domain lookup failed - probable invalid domain name ($domname)"
     }
     Return $False
    }
@@ -94,14 +94,13 @@ Function fnMXRecord {
    
    Try
    {
-    $MXRecord = Resolve-DnsName -Name $domname -Type MX 2> $null
+    $MXRecord = Resolve-DnsName -Name $domname -Type MX -DnsOnly -ErrorAction Stop 2> $null
    }
    Catch
    {
     Return $False
    }
    
-
    If ( $MXRecord.NameExchange )
    {
     $MXRec = $MXRecord.NameExchange
@@ -122,7 +121,7 @@ Function fnSPFRecord {
   param ([string]$DomName)
    Try
    {
-    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT | Where-Object strings -Like "v=spf1*" 2>$null 
+    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT -DnsOnly -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -131,17 +130,36 @@ Function fnSPFRecord {
    If ($SPFRecord.Strings)
    { 
     $SPFRec = $SPFRecord | Select-Object -ExpandProperty Strings
-    Return $SPFRec
+    
+    # Check validity of SPF record
+    If ($SPFRec -like "v=spf1*") 
+    {
+     Return $SPFRec
+    }
+    else
+    {
+     Return "[Invalid:]$($SPFRec)"  
+    }
    }
-    Else
-   {
-     Return $False
-   }
+
+   Return $False
+   
 } # End Function fnSPFRecord
 
 Function fnDKIMRecord {
 
   param ([string]$domname, [string]$selector)
+   
+   # Check for existence of _domainkey
+   # This can tell if a Selector exists.
+   Try 
+   {
+    $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -ErrorAction Stop 2> $null
+   }
+   Catch
+   {
+    Return $False
+   }
    
    If ($selector -eq "")
    { 
@@ -153,7 +171,7 @@ Function fnDKIMRecord {
 
    Try 
    {
-    $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT 2> $null
+    $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT -DnsOnly -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -162,7 +180,16 @@ Function fnDKIMRecord {
    If ($strDKIMRecord.Strings)
    {
     $strDKIMRecord = $strDKIMRecord.Strings
-    Return "$($Selector)""$($charListSep)""$($strDKIMRecord)"
+    
+    # Check validity of DKIM record
+    If ($strDKIMRecord -like "v=DKIM1*")
+    {
+     Return "$($Selector)""$($charListSep)""$($strDKIMRecord)"
+    }
+    else
+    {
+     Return "$($Selector)""$($charListSep)""[INVALID:]$($strDKIMRecord)"
+    }
    }
    Else
    {
@@ -178,7 +205,7 @@ Function fnDMARCRecord {
 
    Try
    {
-     $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT 2> $null
+    $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT -DnsOnly -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -188,13 +215,15 @@ Function fnDMARCRecord {
    If ($DMARCRecord.Strings)
    {
     $DMARCRec = $DMARCRecord | Select-Object -ExpandProperty Strings
+    
+    # Check validity of DMARC record
     If ($DMARCRec -like "v=DMARC1*") 
     {
      Return $DMARCRec
     }
     else
     {
-     Return $False 
+     Return "[Invalid:]$($DMARCRec)"
     }
    }
    Else
