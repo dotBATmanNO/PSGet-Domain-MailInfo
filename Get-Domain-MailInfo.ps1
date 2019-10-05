@@ -122,7 +122,7 @@ Function fnSPFRecord {
   param ([string]$DomName)
    Try
    {
-    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT | Where strings -LIKE "v=spf1*" 
+    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT | Where-Object strings -Like "v=spf1*" 2>$null 
    }
    Catch
    {
@@ -178,7 +178,7 @@ Function fnDMARCRecord {
 
    Try
    {
-     $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT 2> $null
+     $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT | Where-Object strings -Like "v=DMARC1*" 2> $null
    }
    Catch
    {
@@ -325,30 +325,7 @@ ForEach ( $domainname in $arrDomains )
    If ($CheckDMARC)
    {
     $dominfoDMARCDet = fnDMARCRecord($domainName)
-    If ($dominfoDMARCDet) 
-    { 
-     $dominfoDMARC = "True"   
-     
-     # https://tools.ietf.org/html/rfc7489#section-6.3
-     #  v: Version (plain-text; REQUIRED).  Identifies the record retrieved
-     #  as a DMARC record.  It MUST have the value of "DMARC1".  The value
-     #  of this tag MUST match precisely; if it does not or it is absent,
-     #  the entire retrieved record MUST be ignored.  It MUST be the first
-     #  tag in the list.
-     If ($dominfoDMARCDet.Substring(0,8) -ne "v=DMARC1")
-     {
-      $dominfoDMARCDet = "[Invalid:] $($dominfoDMARCDet)"
-     }
-     else
-     {
-      $dominfoDMARC = "" 
-      $dominfoDMARCDet
-     }
-    }
-    else
-    { 
-     $dominfoDMARC = $dominfoDMARCDet = "False"
-    }
+    If ($dominfoDMARCDet) { $dominfoDMARC = "True" } else { $dominfoDMARC = $dominfoDMARCDet = "False" }
    }
    else
    {
