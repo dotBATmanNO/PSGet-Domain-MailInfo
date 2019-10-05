@@ -24,7 +24,7 @@
  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose
   VERBOSE:  Script Get-Domain-MailInfo.ps1
-  VERBOSE:  Last Updated 2019-10-01
+  VERBOSE:  Last Updated 2019-10-06
   VERBOSE: 
   VERBOSE:  Checking 00001 domain(s)
   VERBOSE: 
@@ -138,6 +138,7 @@ Function fnSPFRecord {
     }
     else
     {
+     Write-Verbose "[INVALID:] SPF Record does not start with v=SPF1"
      Return "[Invalid:]$($SPFRec)"  
     }
    }
@@ -188,6 +189,7 @@ Function fnDKIMRecord {
     }
     else
     {
+     Write-Verbose "[INVALID:] DKIM record does not start with v=DKIM1"
      Return "$($Selector)""$($charListSep)""[INVALID:]$($strDKIMRecord)"
     }
    }
@@ -223,7 +225,8 @@ Function fnDMARCRecord {
     }
     else
     {
-     Return "[Invalid:]$($DMARCRec)"
+      Write-Verbose "[INVALID:] DMARC record does not start with v=DMARC1"
+      Return "[Invalid:]$($DMARCRec)"
     }
    }
    Else
@@ -294,7 +297,7 @@ If ($arrDomains.Count -eq 0)
 # Verbose Script information on Script version and parameters
 $strDomainsToCheck = $arrDomains.Count.ToString().PadLeft(5, "0")
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
-Write-Verbose " Last Updated 2019-10-01"
+Write-Verbose " Last Updated 2019-10-06"
 Write-Verbose ""
 Write-Verbose " Checking $($strDomainsToCheck) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
