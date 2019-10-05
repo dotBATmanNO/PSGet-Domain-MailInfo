@@ -325,7 +325,30 @@ ForEach ( $domainname in $arrDomains )
    If ($CheckDMARC)
    {
     $dominfoDMARCDet = fnDMARCRecord($domainName)
-    If ($dominfoDMARCDet) { $dominfoDMARC = "True" } else { $dominfoDMARC = $dominfoDMARCDet = "False" }
+    If ($dominfoDMARCDet) 
+    { 
+     $dominfoDMARC = "True"   
+     
+     # https://tools.ietf.org/html/rfc7489#section-6.3
+     #  v: Version (plain-text; REQUIRED).  Identifies the record retrieved
+     #  as a DMARC record.  It MUST have the value of "DMARC1".  The value
+     #  of this tag MUST match precisely; if it does not or it is absent,
+     #  the entire retrieved record MUST be ignored.  It MUST be the first
+     #  tag in the list.
+     If ($dominfoDMARCDet.Substring(0,8) -ne "v=DMARC1")
+     {
+      $dominfoDMARCDet = "[Invalid:] $($dominfoDMARCDet)"
+     }
+     else
+     {
+      $dominfoDMARC = "" 
+      $dominfoDMARCDet
+     }
+    }
+    else
+    { 
+     $dominfoDMARC = $dominfoDMARCDet = "False"
+    }
    }
    else
    {
