@@ -334,7 +334,7 @@ If ($UseHeader) { Write-Host $headerline }
 ForEach ( $domainname in $arrDomains )
 {
  # First check is to see if this domain can be resolved
- If (fnIsDomain($domainname))
+ If (fnIsDomain -domname $domainname)
  {
   # Next we try to resolve the MX and SPF records
   $dominfoMX = fnMXRecord -domname $domainName
@@ -375,7 +375,7 @@ ForEach ( $domainname in $arrDomains )
    # Done with DKIM - Let's check DMARC
    If ($CheckDMARC)
    {
-    $dominfoDMARCDet = fnDMARCRecord($domainName)
+    $dominfoDMARCDet = fnDMARCRecord -domname $domainName
     If ($dominfoDMARCDet) { $dominfoDMARC = "True" } else { $dominfoDMARC = $dominfoDMARCDet = "False" }
    }
    else
