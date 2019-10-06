@@ -143,18 +143,11 @@ Function fnSPFRecord {
    { 
     $SPFRec = $SPFRecord.Strings | Where-Object -FilterScript { $_ -like "v=spf1*" }
     
-    # Check validity of SPF record
-    If ($SPFRec -like "v=spf1*") 
-    {
-     Return $SPFRec
-    }
-    else
-    {
-     Write-Verbose "[INVALID:] SPF Record does not start with v=SPF1"
-     Return "[Invalid:]$($SPFRec)"  
-    }
+    If ($SPFRec) { Return $SPFRec }
+    
    }
 
+   # No v=SPF1 txt record was found
    Return $False
    
 } # End Function fnSPFRecord
