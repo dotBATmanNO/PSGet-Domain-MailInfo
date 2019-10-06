@@ -107,7 +107,19 @@ Function fnMXRecord {
     
     # Return multiple MX records as comma separated list.
     If ( $MXRec -is [Array]) { $MXRec = $MXRec -join "," }
-    If ( $MXRec -eq "." )    { $MXRec = "Null MX (RFC7505)"}
+    If ( $MXRec -eq "." )    
+    {
+      # . (dot) as MX record indicates Null MX
+      If ($MXRecord.Preference -eq 0)
+     {
+      # With a preference of 0 this is a valid NullMX record
+      $MXRec = "Null MX (RFC7505)"
+     }
+     else 
+     {
+      $MXRec = "[Invalid:] Null MX (RFC7505) should have Preference=0, was $($MXRecord.Preference)."
+     }
+    }
     Return $MXRec
    }
    Else
