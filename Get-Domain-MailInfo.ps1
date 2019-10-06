@@ -141,7 +141,7 @@ Function fnSPFRecord {
    }
    If ($SPFRecord.Strings)
    { 
-    $SPFRec = $SPFRecord | Select-Object -ExpandProperty Strings
+    $SPFRec = $SPFRecord.Strings | Where-Object -FilterScript { $_ -like "v=spf1*" }
     
     # Check validity of SPF record
     If ($SPFRec -like "v=spf1*") 
