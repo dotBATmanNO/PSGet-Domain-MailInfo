@@ -5,9 +5,18 @@
   Default is to retrieve MX, SPF and DMARC records. 
   * Will recognize Null MX - RFC7505
   
-  Optionally add -CheckDKIM 1 to retrieve DKIM record.
-  * Note requirement to provide DKIMSelector
-    Will fall back to using -DKIMSelector Selector1 (Microsoft Exchange Online)
+  Optionally add -CheckDKIM 1 to retrieve DKIM record(s).
+  * Note requirement to provide DKIMSelector parameter.
+    This parameter is a text array - provide selectors separated by comma
+
+    Will fall back to using -DKIMSelector Selector1, Selector2 (Microsoft Exchange Online)
+    
+    Returns two columns
+    - DKIMSelector holding all Selectors tested, separated by /
+    - DKIMRecord holding [Selector1]DKIMRecord1/[Selector2]DKIMRecord2
+    
+    Example below is typically seen when DNS has wildcard TXT/SOA record:
+    "Selector1/Selector2";"[Selector1]NoDKIMRecord/[Selector2]NoDKIMRecord"
     
   - Outputs to DomainResults.csv and console.
   - Uses System Default List Separator Character and Quotes to simplify CSV processing.
@@ -20,11 +29,11 @@
  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -CheckDKIM 1
   "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
-  "example.com";"True";"True";"False";"False";".";"v=spf1 -all";"Selector1";"False";"False"
+  "example.com";"True";"True";"False";"False";"Null MX (RFC7505)";"v=spf1 -all";"False";"False"
  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose
   VERBOSE:  Script Get-Domain-MailInfo.ps1
-  VERBOSE:  Last Updated 2019-10-06
+  VERBOSE:  Last Updated 2019-10-07
   VERBOSE: 
   VERBOSE:  Checking 00001 domain(s)
   VERBOSE: 
@@ -49,10 +58,12 @@
     # Default is NOT to check DKIM (RFC6376)
     # If you add -CheckDKIM 1 you should also specify -DKIMSelector <selector>
     [bool]$CheckDKIM=$false,
-    # Specify the DKIMSelector to check, tip is to check received e-mail.
-    # Note: The script defaults to Selector1, used for Microsoft Exchange online.
+    # Specify the DKIMSelector(s) to check separated by comma.
+    # Tip: Send an e-mail to external mailbox for each system to check Selector for.
+    # Note: The script defaults to -DKIMSelector Selector1, Selector2
+    #       This is the default used by Microsoft Exchange online.
     #       You could try -DKIMSelector google for G-Suite
-    [string]$DKIMSelector="Selector1",
+    [string[]]$DKIMSelector=@("Selector1", "Selector2"),
     # Default is to overwrite the .CSV file.
     # Note: The script will check for file lock and softfail.
     #       Remember to close the CSV file before running the script again.
@@ -154,56 +165,59 @@ Function fnSPFRecord {
 
 Function fnDKIMRecord {
 
-  param ([string]$domname, [string]$selector)
+  param ([string]$domname, [string[]]$selector)
    
-   # Check for existence of _domainkey
-   # This can tell if a Selector exists.
-   Try 
-   {
-    $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -ErrorAction Stop 2> $null
-   }
-   Catch
-   {
-    Return $False
-   }
-   
-   If ($selector -eq "")
-   { 
-    $selector = Read-Host "Input Selector to use for $domname"
-   }
-   
+  # Check for existence of _domainkey
+  # This is an easy but not guaranteed way to tell if any Selector(s) exist.
+  Try 
+  {
+   $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -ErrorAction Stop 2> $null
+  }
+  Catch
+  {
+   # Script currently fails the DKIM check if _domainkey does not exist. 
+   # Consider if this is always true, e.g. different DNS server implementations.
+   Return $False
+  }
+  
+  If ($selector -eq "")
+  { 
+   $selector = Read-Host "Input Selector to use for $domname"
+  }
+  
+  $strSelectors = $strDKIMRecords = ""
+  ForEach ($DKIMSel in $Selector)
+  {
    # Build DKIM record selector._domainkey.domainname
-   $strDKIMrec = "$($selector)._domainkey.$($domname)"
-
+   $strDKIMrec = "$($DKIMSel)._domainkey.$($domname)"
+   $strDKIMRecord = ""
+   
    Try 
    {
     $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT -DnsOnly -ErrorAction Stop 2> $null
    }
    Catch
    {
-    Return $False
+    $strDKIMRecord = "NoDKIMRecord"
    }
    If ($strDKIMRecord.Strings)
    {
-    $strDKIMRecord = $strDKIMRecord.Strings
-    
-    # Check validity of DKIM record
-    If ($strDKIMRecord -like "v=DKIM1*")
+    $strDKIMRecord = $strDKIMRecord.Strings | Where-Object -FilterScript { $_ -like "v=DKIM1*" }
+    If ($null -eq $strDKIMRecord)
     {
-     Return "$($Selector)""$($charListSep)""$($strDKIMRecord)"
-    }
-    else
-    {
-     Write-Verbose "[INVALID:] DKIM record does not start with v=DKIM1"
-     Return "$($Selector)""$($charListSep)""[INVALID:]$($strDKIMRecord)"
+     Write-Verbose "[INVALID:] TXT record for selector $($DKIMSel) does not start with v=DKIM1"
+     $strDKIMRecord = "[INVALID:]$($strDKIMRecord)"
     }
    }
-   Else
+   else
    {
-    # No DKIM record found for this selector
-    Return "$($Selector)""$($charListSep)""False"
+    $strDKIMRecord = "NoDKIMRecord"  
    }
+   $strSelectors = "$($strSelectors)/$($DKIMSel)"
+   $strDKIMRecords = "$($strDKIMRecords)/[$($DKIMSel)]$($strDKIMRecord)"
    
+  }
+  Return "$($strSelectors.Substring(1))""$($charListSep)""$($strDKIMRecords.Substring(1))" 
 } # End Function fnDKIMRecord
 
 Function fnDMARCRecord {
@@ -302,7 +316,7 @@ If ($arrDomains.Count -eq 0)
 # Verbose Script information on Script version and parameters
 $strDomainsToCheck = $arrDomains.Count.ToString().PadLeft(5, "0")
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
-Write-Verbose " Last Updated 2019-10-06"
+Write-Verbose " Last Updated 2019-10-07"
 Write-Verbose ""
 Write-Verbose " Checking $($strDomainsToCheck) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
