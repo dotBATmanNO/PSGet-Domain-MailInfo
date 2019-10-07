@@ -31,6 +31,10 @@
   "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
   "example.com";"True";"True";"False";"False";"Null MX (RFC7505)";"v=spf1 -all";"False";"False"
  .EXAMPLE
+  .\Get-Domain-MailInfo.ps1 github.com -CheckDKIM 1 -DKIMSelector google
+  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
+  "github.com";"True";"True";"True";"True";"ALT4.ASPMX.L.GOOGLE.COM,ALT2.ASPMX.L.GOOGLE.COM,ALT1.ASPMX.L.GOOGLE.COM,ALT3.ASPMX.L.GOOGLE.COM,ASPMX.L.GOOGLE.COM";"v=spf1 ip4:192.30.252.0/22 ip4:208.74.204.0/22 ip4:46.19.168.0/23 include:_spf.google.com include:esp.github.com include:_spf.createsend.com include:servers.mcsv.net ~all";"google";"[google]v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCNcsfnwX5c/B/MF/7J6/kDTO7rl08yEcrDLMDPp2YONNwqqpZxRSNt+cI8am8ixoPQ0V0bMVu1mYwZEV59u96vZFjVQIkfh08Y7q1jSjjd35FoaQl4YS5H4q6C4ARaC70jf2/NEDUUJFImkPKUZ42SV7MWQs2NnAEOXNQwvWmbCwIDAQAB";"v=DMARC1; p=none; rua=mailto:dmarc@github.com"
+ .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose
   VERBOSE:  Script Get-Domain-MailInfo.ps1
   VERBOSE:  Last Updated 2019-10-07
@@ -41,13 +45,18 @@
   "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
   VERBOSE: Fail: Domain lookup failed - probable invalid domain name (-invalid.name)
   "-invalid.name";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A"
+ .EXAMPLE
+  .\Get-Domain-MailInfo.ps1 -Path .\DomainList.txt
+  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
+  "example.com";"True";"True";"#N/A";"False";"Null MX (RFC7505)";"v=spf1 -all";"#N/A";"#N/A";"False"
+  "-example.com";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A"
 #>
 [CmdletBinding(
-  DefaultParameterSetName="Name")]
+  PositionalBinding=$false,DefaultParameterSetName="Name")]
   param (
     # Script execution option 1 is to check ONE domain
     [Parameter(ParameterSetName="Name")]
-    [string]$Name = "example.com",
+    [Parameter(Position=0)][string]$Name = "example.com",
     # Script execution option 2 is to check a list of domains from a file, one domain per line
     [Parameter(ParameterSetName="Path")]
     [string]$Path,
