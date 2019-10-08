@@ -24,32 +24,50 @@
   https://github.com/dotBATmanNO/PSGet-Domain-MailInfo/
  .EXAMPLE
   .\Get-Domain-MailInfo
-  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
-  "example.com";"True";"True";"#N/A";"False";".";"v=spf1 -all";"#N/A";"#N/A";"False"
+  Domain       : example.com
+  HasMX        : True
+  HasSPF       : True
+  HasDKIM      : #N/A
+  HasDMARC     : False
+  MXRecord     : Null MX (RFC7505)
+  SPFRecord    : v=spf1 -all
+  DKIMSelector : #N/A
+  DKIMRecord   : #N/A
+  DMARCRecord  : False
  .EXAMPLE
-  .\Get-Domain-MailInfo.ps1 -CheckDKIM 1
-  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
-  "example.com";"True";"True";"False";"False";"Null MX (RFC7505)";"v=spf1 -all";"False";"False"
+  .\Get-Domain-MailInfo.ps1 -CheckDKIM 1 | Format-Table -AutoSize
+  Domain      HasMX HasSPF HasDKIM HasDMARC MXRecord          SPFRecord   DKIMSelector        DKIMRecord DMARCRecord
+  ------      ----- ------ ------- -------- --------          ---------   ------------        ---------- -----------
+  example.com  True   True   False    False Null MX (RFC7505) v=spf1 -all Selector1/Selector2      False       False
  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 github.com -CheckDKIM 1 -DKIMSelector google
-  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
-  "github.com";"True";"True";"True";"True";"ALT4.ASPMX.L.GOOGLE.COM,ALT2.ASPMX.L.GOOGLE.COM,ALT1.ASPMX.L.GOOGLE.COM,ALT3.ASPMX.L.GOOGLE.COM,ASPMX.L.GOOGLE.COM";"v=spf1 ip4:192.30.252.0/22 ip4:208.74.204.0/22 ip4:46.19.168.0/23 include:_spf.google.com include:esp.github.com include:_spf.createsend.com include:servers.mcsv.net ~all";"google";"[google]v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCNcsfnwX5c/B/MF/7J6/kDTO7rl08yEcrDLMDPp2YONNwqqpZxRSNt+cI8am8ixoPQ0V0bMVu1mYwZEV59u96vZFjVQIkfh08Y7q1jSjjd35FoaQl4YS5H4q6C4ARaC70jf2/NEDUUJFImkPKUZ42SV7MWQs2NnAEOXNQwvWmbCwIDAQAB";"v=DMARC1; p=none; rua=mailto:dmarc@github.com"
- .EXAMPLE
-  .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose
+  Domain       : github.com
+  HasMX        : True
+  HasSPF       : True
+  HasDKIM      : True
+  HasDMARC     : True
+  MXRecord     : aspmx.l.google.com,alt3.aspmx.l.google.com,alt2.aspmx.l.google.com,alt1.aspmx.l.google.com,alt4.aspmx.l.google.com
+  SPFRecord    : v=spf1 ip4:192.30.252.0/22 ip4:208.74.204.0/22 ip4:46.19.168.0/23 include:_spf.google.com include:esp.github.com include:_spf.createsend.com include:servers.mcsv.net ~all
+  DKIMSelector : google
+  DKIMRecord   : [google]v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCNcsfnwX5c/B/MF/7J6/kDTO7rl08yEcrDLMDPp2YONNwqqpZxRSNt+cI8am8ixoPQ0V0bMVu1mYwZEV59u96vZFjVQIkfh08Y7q1jSjjd35FoaQl4YS5H4q6C4ARaC70jf2/NEDUUJFImkPKUZ42SV7MWQs2NnAEOXNQwvWmbCwIDAQAB
+  DMARCRecord  : v=DMARC1; p=none; rua=mailto:dmarc@github.com
+.EXAMPLE
+  .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose | FT
   VERBOSE:  Script Get-Domain-MailInfo.ps1
   VERBOSE:  Last Updated 2019-10-07
-  VERBOSE: 
-  VERBOSE:  Checking 00001 domain(s)
-  VERBOSE: 
-  VERBOSE: 
-  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
-  VERBOSE: Fail: Domain lookup failed - probable invalid domain name (-invalid.name)
-  "-invalid.name";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A"
- .EXAMPLE
-  .\Get-Domain-MailInfo.ps1 -Path .\DomainList.txt
-  "Domain";"HasMX";"HasSPF";"HasDKIM";"HasDMARC";"MXRecord";"SPFRecord";"DKIMSelector";"DKIMRecord";"DMARCRecord"
-  "example.com";"True";"True";"#N/A";"False";"Null MX (RFC7505)";"v=spf1 -all";"#N/A";"#N/A";"False"
-  "-example.com";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A";"#N/A"
+  VERBOSE:
+  VERBOSE:  Checking 1 domain(s)
+  VERBOSE: [INVALID:] Domain lookup failed - probable invalid domain name (-invalid.name)
+
+  Domain        HasMX HasSPF HasDKIM HasDMARC MXRecord SPFRecord DKIMSelector DKIMRecord DMARCRecord
+  ------        ----- ------ ------- -------- -------- --------- ------------ ---------- -----------
+  -invalid.name #N/A  #N/A   #N/A    #N/A     #N/A     #N/A      #N/A         #N/A       #N/A
+.EXAMPLE
+  .\Get-Domain-MailInfo.ps1 -Path .\DomainList.txt | FT
+  Domain       HasMX HasSPF HasDKIM HasDMARC MXRecord          SPFRecord   DKIMSelector DKIMRecord DMARCRecord
+  ------       ----- ------ ------- -------- --------          ---------   ------------ ---------- -----------
+  example.com   True   True #N/A       False Null MX (RFC7505) v=spf1 -all #N/A         #N/A             False
+  -example.com  #N/A   #N/A #N/A        #N/A #N/A              #N/A        #N/A         #N/A              #N/A
 #>
 [CmdletBinding(
   PositionalBinding=$false,DefaultParameterSetName="Name")]
@@ -222,11 +240,10 @@ Function fnDKIMRecord {
    {
     $strDKIMRecord = "NoDKIMRecord"  
    }
-   $strSelectors = "$($strSelectors)/$($DKIMSel)"
    $strDKIMRecords = "$($strDKIMRecords)/[$($DKIMSel)]$($strDKIMRecord)"
    
   }
-  Return "$($strSelectors.Substring(1))""$($charListSep)""$($strDKIMRecords.Substring(1))" 
+  Return $strDKIMRecords.Substring(1)
 } # End Function fnDKIMRecord
 
 Function fnDMARCRecord {
@@ -298,11 +315,11 @@ Function fnCheckCSVFileLock {
 
 # Initialize Script
 # First step is to define script settings
-$ScriptPath = Split-Path -parent $PSCommandPath     # Use the folder the script was started from
-$charListSep = (Get-Culture).TextInfo.ListSeparator # Get the local system list separator
-$csvFile = "$ScriptPath\DomainResults.csv"          # Place the DomainResults.csv in script folder
-$bolCSV = $true                                     # Bolean value used to detect If CSV file is locked
-If ($CheckDKIM -eq $False) { $DKIMSelector = ""}    # If DKIM is not checked we do not need a selector
+$ScriptPath = Split-Path -parent $PSCommandPath      # Use the folder the script was started from
+$charListSep = (Get-Culture).TextInfo.ListSeparator  # Get the local system list separator
+$csvFile = "$ScriptPath\DomainResults.csv"           # Place the DomainResults.csv in script folder
+$bolCSV = $true                                      # Bolean value used to detect If CSV file is locked
+If ($CheckDKIM -eq $False) { $DKIMSelector = "#N/A"} # If DKIM is not checked we do not need a selector
 
 # Header line using quotes and system default list separator character
 $arrheader = """Domain", "HasMX", "HasSPF", "HasDKIM", "HasDMARC", 
@@ -323,11 +340,10 @@ If ($arrDomains.Count -eq 0)
 } 
 
 # Verbose Script information on Script version and parameters
-$strDomainsToCheck = $arrDomains.Count.ToString().PadLeft(5, "0")
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
 Write-Verbose " Last Updated 2019-10-07"
 Write-Verbose ""
-Write-Verbose " Checking $($strDomainsToCheck) domain(s)"
+Write-Verbose " Checking $($arrDomains.Count) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
 # End Script information Verbose block
 
@@ -344,87 +360,132 @@ else
  If ($UseHeader) { Add-Content -Path $CSVFile -Value $headerline }
 } 
 
-If ($UseHeader) { Write-Host $headerline } 
+#If ($UseHeader) { Write-Host $headerline } 
+# Initialize an array
+$arrOutput = @()
 
+# Create an ordered hashtable and a new PSobject
+$rowhash = [ordered]@{
+  Domain = "";
+  HasMX = "";
+  HasSPF = "";
+  HasDKIM = "";
+  HasDMARC = "";
+  MXRecord = "";
+  SPFRecord = "";
+  DKIMSelector = "";
+  DKIMRecord = "";
+  DMARCRecord = "";
+ }
+
+[int]$iDomain = 0
 # Start enumerating the domain(s) that have been nominated
 ForEach ( $domainname in $arrDomains )
 {
+ $iDomain++
+ $iDomainPercent = $iDomain/$arrDomains.Count*100
+ Write-Progress -Activity "Enumerating $($arrDomains.Count) domain(s)" -Id 1 -PercentComplete $iDomainPercent -CurrentOperation "Checking $($domainname)"
+
+ # Initialize the row PSObject
+ $row = New-Object PSObject -Property $rowhash
+
  # First check is to see if this domain can be resolved
  If (fnIsDomain -domname $domainname)
  {
   # Next we try to resolve the MX and SPF records
-  $dominfoMX = fnMXRecord -domname $domainName
+  $dominfoMXDet = fnMXRecord -domname $domainName
 
   # We check SPF even if there is no MX record.
   If ($CheckSPF) 
   { 
    $dominfoSPFDet = fnSPFRecord -DomName $domainName 
-   If ($dominfoSPFDet) { $dominfoSPF = "True" } else { $dominfoSPF = $dominfoSPFDet = "False" }
+   If ($dominfoSPFDet) { $dominfoSPF = $True } else { $dominfoSPF = $dominfoSPFDet = $false }
   }
   else
   {
    $dominfoSPF = $dominfoSPFDet = "#N/A"
   }
 
-  If ($dominfoMX)
+  If ($dominfoMXDet)
   {
    # Got MX - let's check DKIM
+   $dominfoMX = $true;
    If ($CheckDKIM)
    {
     $dominfoDKIMDet = fnDKIMRecord -Domname $domainName -Selector $DKIMSelector
     If ($dominfoDKIMDet -match "DKIM1")
     {
-     $dominfoDKIM = "True"
+     $dominfoDKIM = $true
     }
     Else
     {
-     $dominfoDKIM = "False"
+     $dominfoDKIM = $false
     }
    }
    else
    {
     # Not checking DKIM, let's return #N/A
-    $dominfoDKIM = "#N/A"
-    $dominfoDKIMDet = "#N/A""$($charlistSep)""#N/A"
+    $dominfoDKIM = $dominfoDKIMDet = "#N/A"
    } # End DKIM Check
 
    # Done with DKIM - Let's check DMARC
    If ($CheckDMARC)
    {
     $dominfoDMARCDet = fnDMARCRecord -domname $domainName
-    If ($dominfoDMARCDet) { $dominfoDMARC = "True" } else { $dominfoDMARC = $dominfoDMARCDet = "False" }
+    If ($dominfoDMARCDet) { $dominfoDMARC = $true } else { $dominfoDMARC = $dominfoDMARCDet = $false }
    }
    else
    {
-    $dominfoDMARC = "False"
+    $dominfoDMARC = $false
     $dominfoDMARCDet = "#N/A" 
    }
-   # Build result line using quotes and system default list separator character
-   $arrLine = """$DomainName", "True", $dominfoSPF, $dominfoDKIM, $dominfoDMARC,
-                     $dominfoMX, "$($dominfoSPFDet)", $dominfoDKIMDet, "$dominfoDMARCDet"""
-   $ContentLine =  $arrLine -join """$($charlistsep)"""
   }
   else 
   {
-   # No MX Record Found, return SPF if found - other checks were skipped
-   $arrLine = """$DomainName", "False", $dominfoSPF, "#N/A", "#N/A",
-                     "#N/A", "$($dominfoSPFDet)", "#N/A", "#N/A", "#N/A"""
-   $ContentLine = $arrLine -join """$($charlistsep)"""
-   $ContentLine =  $arrLine -join """$($charlistsep)"""
-
+    
+    # No MX record, set other variables to #N/A
+    $dominfoMX = $false
+    $dominfoDKIM = "#N/A";
+    $dominfoDMARC = "#N/A";
+    $dominfoMXDet = "#N/A";
+    $dominfoDKIMDet = "#N/A";
+    $dominfoDMARCDet = "#N/A";
+    
   }
   
  }
  else
  {
   # Domain lookup failed - set all columns but domainname to #N/A
-  # Using Fill Array tip from https://stackoverflow.com/questions/17875852/
-  $arrline = ,"#N/A" * 9
-  $ContentLine = $arrLine -join """$($charlistsep)"""
-  $ContentLine = """$($domainname)""$($charlistsep)""$($ContentLine)"""
+  $dominfoMX = "#N/A"
+  $dominfoSPF = "#N/A"
+  $dominfoDKIM = "#N/A";
+  $dominfoDMARC = "#N/A";
+  $dominfoMXDet = "#N/A";
+  $dominfoSPFDet = "#N/A";
+  $dominfoDKIMDet = "#N/A";
+  $dominfoDMARCDet = "#N/A";
+    
  }
- # Return output to CSV (if not disabled) and screen.
- If ($bolCSV) { Add-Content -Path $csvFile -Value $ContentLine }
- Write-Host $ContentLine
+ $row.Domain = $domainname
+ $row.HasMX = $dominfoMX
+ $row.HasSPF = $dominfoSPF
+ $row.HasDKIM = $dominfoDKIM
+ $row.HasDMARC = $dominfoDMARC
+ $row.MXRecord = $dominfoMXDet
+ $row.SPFRecord = $dominfoSPFDet
+ $row.DKIMSelector = $DKIMSelector -Join "/"
+ $row.DKIMRecord = $dominfoDKIMDet
+ $row.DMARCRecord = $dominfoDMARCDet
+
+ $arroutput += $row
+ Clear-Variable row
+
  Clear-Variable dominfo*
 }
+# Remove progress bar
+Write-Progress -Activity "Enumerating domain(s)" -Id 1 -Completed
+
+# Return output, save to CSV (if not disabled).
+If ($bolCSV) { $arrOutput | Export-Csv -Path $csvFile -Append -NoClobber -NoTypeInformation -UseCulture  }
+Write-Output $arrOutput
