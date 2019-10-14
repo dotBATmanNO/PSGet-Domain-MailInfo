@@ -1,5 +1,42 @@
 # PSGet-Domain-MailInfo
-PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC 
+PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC.
+
+Outputs to CSV file and to PowerShell Pipeline.
+
+Example use:
+```
+$mydomains = .\Get-Domain-MailInfo -Path .\MyDomains.txt -CheckDKIM 1
+```
+(progress bar will be shown - enumerating each domain as it is checked)
+The array $mydomains now holds the result for all requested domain names.
+
+List the domainnames that have SPF:
+```
+$domains | Where-Object -FilterScript { $_.HasSPF -eq $true } | Select-Object $_ -ExpandProperty Domain
+```
+
+Print information for one domain:
+```
+$domains[nn]
+```
+or named 
+```
+$domains.where{ $_.Domain -eq "example.com" }
+
+Domain       : example.com
+HasMX        : True
+HasSPF       : True
+HasDKIM      : #N/A
+HasDMARC     : False
+MXRecord     : Null MX (RFC7505)
+SPFRecord    : v=spf1 -all
+DKIMSelector : #N/A
+DKIMRecord   : #N/A
+DMARCRecord  : False
+```
+
+More information and examples can be found using Get-Help, see output below:
+
 ```
 PS C:\> Get-Help .\Get-Domain-MailInfo.ps1 -Full
 
