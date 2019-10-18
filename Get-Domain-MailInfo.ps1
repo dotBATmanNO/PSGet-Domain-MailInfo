@@ -74,7 +74,7 @@
   param (
     # Script execution option 1 is to check ONE domain
     [Parameter(ParameterSetName="Name")]
-    [Parameter(Position=0)][string]$Name = "example.com",
+    [Parameter(Position=0)][string[]]$Name = "example.com",
     # Script execution option 2 is to check a list of domains from a file, one domain per line
     [Parameter(ParameterSetName="Path")]
     [string]$Path,
@@ -96,7 +96,10 @@
     #       Remember to close the CSV file before running the script again.
     [bool]$Overwrite=$true,
     # The UseHeader line preference follows Overwrite unless specified
-    [bool]$UseHeader=$Overwrite)
+    [bool]$UseHeader=$Overwrite,
+    # The CreateGraph option is set to False by default as it is just a nice-to-have.
+    # Will create one .PNG pie-chart per protection type; HasSPF/HasDKIM/HasDMARC.
+    [bool]$CreateGraphs=$False)
 
 Function fnIsDomain {
 
@@ -212,7 +215,7 @@ Function fnDKIMRecord {
    $selector = Read-Host "Input Selector to use for $domname"
   }
   
-  $strSelectors = $strDKIMRecords = ""
+  $strDKIMRecords = ""
   ForEach ($DKIMSel in $Selector)
   {
    # Build DKIM record selector._domainkey.domainname
@@ -313,11 +316,58 @@ Function fnCheckCSVFileLock {
 
 }
 
+Function fnBuildGraph {
+
+  param ([string]$PNGFileName, [string]$ProtectionType, $ProtectionData)
+  
+  #Let's set the colors correctly
+  $arrColors = @()
+  ForEach ($key in $ProtectionData.Keys)
+  {
+   If ($key -like "True*" ) { $arrColors += [System.Drawing.Color]::Green  }
+   If ($key -like "False*") { $arrColors += [System.Drawing.Color]::Red    }
+   If ($key -like "#N/A*" ) { $arrColors += [System.Drawing.Color]::Orange }
+  }
+  
+  [void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
+
+  #frame
+	$HasProtectionChart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
+	$HasProtectionChart.Width = 800
+	$HasProtectionChart.Height = 400
+	$HasProtectionChart.BackColor = [System.Drawing.Color]::White
+  $HasProtectionChart.Palette = [System.Windows.Forms.DataVisualization.Charting.ChartColorPalette]::None
+  $HasProtectionChart.PaletteCustomColors = $arrColors
+
+  #header 
+	[void]$HasProtectionChart.Titles.Add("E-mail Protection: $($ProtectionType)")
+
+	$HasProtectionChart.Titles[0].Font = "segoeuilight,20pt"
+
+	$HasProtectionChart.Titles[0].Alignment = "topLeft"
+		 
+	$chartarea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+
+	$chartarea.Name = "$($ProtectionType)Area"
+		   
+	$HasProtectionChart.ChartAreas.Add($chartarea)
+  
+	[void]$HasProtectionChart.Series.Add("ProtectionData")
+  
+  $HasProtectionChart.Series["ProtectionData"].ChartType = [System.Windows.Forms.DataVisualization.Charting.SeriesChartType]::Pie
+
+  $HasProtectionChart.Series["ProtectionData"].Points.DataBindXY($ProtectionData.Keys, $ProtectionData.Values)
+      
+  $HasProtectionChart.SaveImage($PNGFileName,"png")
+
+} # End fnBuildGraph
+
 # Initialize Script
 # First step is to define script settings
 $ScriptPath = Split-Path -parent $PSCommandPath      # Use the folder the script was started from
 $charListSep = (Get-Culture).TextInfo.ListSeparator  # Get the local system list separator
 $csvFile = "$ScriptPath\DomainResults.csv"           # Place the DomainResults.csv in script folder
+$pngFile = "$ScriptPath\DomainResults"               # Place the DomainResults_ProtectionType.png images in script folder
 $bolCSV = $true                                      # Bolean value used to detect If CSV file is locked
 If ($CheckDKIM -eq $False) { $DKIMSelector = "#N/A"} # If DKIM is not checked we do not need a selector
 
@@ -485,6 +535,27 @@ ForEach ( $domainname in $arrDomains )
 }
 # Remove progress bar
 Write-Progress -Activity "Enumerating domain(s)" -Id 1 -Completed
+
+If ($CreateGraphs)
+{ 
+ #Create PieCharts
+ $arrKeys = @($true, $false, "#N/A")
+ $arrProtType = @("HasSPF", "HasDKIM", "HasDMARC")
+ ForEach ($strProtType in $arrProtType) 
+ {
+  $arrProt = [ordered]@{}
+  $pngFileName = "$($pngFile)_$($strProtType).png"
+  ForEach ($strKey in $arrKeys)
+  {
+   $istrKeyCount = $($arrOutput.Where{ $_.$strProtType -like $strKey }.Count)
+   if ($istrKeyCount -gt 0) { $arrProt.Add("$($strKey.ToString()) ($($istrKeyCount))", $istrKeyCount)}
+  }
+ 
+  fnBuildGraph -PNGFileName $pngFileName -ProtectionType $strProtType -ProtectionData $arrProt
+  $arrProt.Dispose
+ 
+ }
+}
 
 # Return output, save to CSV (if not disabled).
 If ($bolCSV) { $arrOutput | Export-Csv -Path $csvFile -Append -NoClobber -NoTypeInformation -UseCulture  }
