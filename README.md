@@ -3,9 +3,12 @@ PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC.
 
 Outputs to CSV file and to PowerShell Pipeline.
 
-Example use for one domain:
+Example use for one / a limited number of domain(s):
 ```
 PS C:\>.\Get-Domain-MailInfo example.com
+or
+PS C:\>.\Get-Domain-MailInfo example.com, github.com
+
 ```
 Example where a variable is assigned the data that is returned when checking domains listed in a txt file:
 ```
@@ -21,7 +24,7 @@ $mydomains | Where-Object -FilterScript { $_.HasSPF -eq $true } | Select-Object 
 
 Print information for one domain:
 ```
-$mydomains[nn]
+$mydomains[nn] | Format-Table
 ```
 or named 
 ```
@@ -70,12 +73,12 @@ SYNOPSIS
     - Uses System Default List Separator Character and Quotes to simplify CSV processing.
 
 SYNTAX
-    C:\Get-Domain-MailInfo.ps1 [-Name <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-Overwrite <Boolean> [-UseHeader <Boolean>] [<CommonParameters>]
+    C:\Get-Domain-MailInfo.ps1 [-Name <String[]>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [<CommonParameters>]
 
-    C:\Get-Domain-MailInfo.ps1 [[-Name] <String>] [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [<CommonParameters>]
+    C:\Get-Domain-MailInfo.ps1 [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [<CommonParameters>]
 
 PARAMETERS
-    -Name <String>
+    -Name <String[]>
         Script execution option 1 is to check ONE domain
 
         Required?                    false
@@ -154,6 +157,16 @@ PARAMETERS
         Accept pipeline input?       false
         Accept wildcard characters?  false
 
+    -CreateGraphs <Boolean>
+        The CreateGraph option is set to False by default as it is just a nice-to-have.
+        Will create one .PNG pie-chart per protection type; HasSPF/HasDKIM/HasDMARC.
+
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -203,7 +216,7 @@ PARAMETERS
     PS C:\>.\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose | FT
 
     VERBOSE:  Script Get-Domain-MailInfo.ps1
-    VERBOSE:  Last Updated 2019-10-08
+    VERBOSE:  Last Updated 2019-10-07
     VERBOSE:
     VERBOSE:  Checking 1 domain(s)
     VERBOSE: [INVALID:] Domain lookup failed - probable invalid domain name (-invalid.name)
