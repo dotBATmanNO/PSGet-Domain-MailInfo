@@ -1,14 +1,14 @@
 # PSGet-Domain-MailInfo
 PowerShell script to get domain mail info such as MX, SPF, DKIM and DMARC.
 
-Outputs to CSV file and to PowerShell Pipeline.
+Output is accessible in PowerShell pipeline.
+Results are also written to DomainResults.CSV file and optionally to pie-chart PNGs by adding -CreateCharts 1.
 
-Example use for one / a limited number of domain(s):
+Three example uses for one / a limited number of domain(s):
 ```
 PS C:\>.\Get-Domain-MailInfo example.com
-or
 PS C:\>.\Get-Domain-MailInfo example.com, github.com
-
+PS C:\>.\Get-Domain-MailInfo example.com, github.com -CreateCharts 1 -CheckDKIM 1 -DKIMSelector google
 ```
 Example where a variable is assigned the data that is returned when checking domains listed in a txt file:
 ```
