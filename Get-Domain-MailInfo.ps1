@@ -284,6 +284,66 @@ Function fnDMARCRecord {
    }
 } # End Function fnDMARCrecord
 
+
+Function fnCheckSTARTTLS {
+    param ([string]$mxHost)
+
+    Try {
+        #Create connection
+        $conn = new-object System.Net.Sockets.TcpClient             
+        $connect = $conn.BeginConnect($mxHost,25,$null,$null)
+        #Set up a timeout 
+        $wait = $connect.AsyncWaitHandle.WaitOne(3000,$false) 
+        If(-Not $Wait) {
+            Write-Verbose "Connection to $mxHost on port 25 timed out"
+            throw "Timeout"
+        }
+        #Error out of the server refuses our connection attempt
+        If(!$conn.Connected) {
+            Write-Verbose "Connection to $mxHost on port 25 unsuccessful"
+            throw "Connection to $mxHost on port 25 unsuccessful"
+        }
+    } Catch {
+        Write-Host "[Notice: ] Could not connect to the SMTP Server $mxHost" -ForegroundColor Red
+        Return $False
+    }
+    Try {
+        $stream = $conn.GetStream()
+    
+        $reader = new-object System.IO.StreamReader($stream)
+        $writer = new-object System.IO.StreamWriter($stream)
+
+        $stream.ReadTimeout = 5000
+        $writer.AutoFlush = $true
+
+        $connResp = $reader.ReadLine()
+        if(!$connResp.StartsWith("220")) {
+            Write-Verbose $connResp
+            Return $False
+        }
+
+        $writer.WriteLine("EHLO mail")
+        $ehloResp = $reader.ReadLine()
+        if (!$ehloResp.StartsWith("250")) {
+            Write-Verbose "Invalid EHLO response"
+            Return $False
+        }
+
+        $writer.WriteLine("STARTTLS")
+        $startTLSResp = $reader.ReadLine()
+        if (!$startTLSResp.StartsWith("250")) {
+            Write-Verbose "Invalid EHLO response"
+            Return $False
+        }
+        Return $True
+
+    } Catch {
+        Write-Verbose $_
+        Return $False
+    }
+} # End Function fnCheckSTARTTLS
+
+
 Function fnCheckCSVFileLock {
   param ([string]$CSVFileName, [bool]$CreateFile)
   
@@ -315,6 +375,8 @@ Function fnCheckCSVFileLock {
   Return $false 
 
 }
+
+
 
 Function fnBuildGraph {
 
@@ -416,16 +478,17 @@ $arrOutput = @()
 
 # Create an ordered hashtable and a new PSobject
 $rowhash = [ordered]@{
-  Domain = "";
-  HasMX = "";
-  HasSPF = "";
-  HasDKIM = "";
-  HasDMARC = "";
-  MXRecord = "";
-  SPFRecord = "";
-  DKIMSelector = "";
-  DKIMRecord = "";
-  DMARCRecord = "";
+  Domain = ""
+  HasMX = ""
+  HasSPF = ""
+  HasDKIM = ""
+  HasDMARC = ""
+  HasStartTLS = ""
+  MXRecord = ""
+  SPFRecord = ""
+  DKIMSelector = ""
+  DKIMRecord = ""
+  DMARCRecord = ""
  }
 
 [int]$iDomain = 0
@@ -444,6 +507,16 @@ ForEach ( $domainname in $arrDomains )
  {
   # Next we try to resolve the MX and SPF records
   $dominfoMXDet = fnMXRecord -domname $domainName
+  # Next check if the MX supports StartTLS
+  If ($dominfoMXDet -ne $False) {
+    If (!$dominfoMXDet.StartsWith("Null MX") -and !$dominfoMXDet.StartsWith("[Invalid:]")) {
+        $dominfoSTARTTLS = fnCheckSTARTTLS -mxHost $dominfoMXDet.Split(',')[0] #use the first MX
+    } else {
+        $dominfoSTARTTLS = "#N/A"
+    }
+  } else {
+    $dominfoSTARTTLS = "#N/A"
+  }
 
   # We check SPF even if there is no MX record.
   If ($CheckSPF) 
@@ -459,7 +532,7 @@ ForEach ( $domainname in $arrDomains )
   If ($dominfoMXDet)
   {
    # Got MX - let's check DKIM
-   $dominfoMX = $true;
+   $dominfoMX = $true
    If ($CheckDKIM)
    {
     $dominfoDKIMDet = fnDKIMRecord -Domname $domainName -Selector $DKIMSelector
@@ -495,26 +568,28 @@ ForEach ( $domainname in $arrDomains )
     
     # No MX record, set other variables to #N/A
     $dominfoMX = $false
-    $dominfoDKIM = "#N/A";
-    $dominfoDMARC = "#N/A";
-    $dominfoMXDet = "#N/A";
-    $dominfoDKIMDet = "#N/A";
-    $dominfoDMARCDet = "#N/A";
+    $dominfoDKIM = "#N/A"
+    $dominfoDMARC = "#N/A"
+    $dominfoMXDet = "#N/A"
+    $dominfoDKIMDet = "#N/A"
+    $dominfoDMARCDet = "#N/A"
     
   }
-  
+
  }
+
  else
  {
   # Domain lookup failed - set all columns but domainname to #N/A
   $dominfoMX = "#N/A"
   $dominfoSPF = "#N/A"
-  $dominfoDKIM = "#N/A";
-  $dominfoDMARC = "#N/A";
-  $dominfoMXDet = "#N/A";
-  $dominfoSPFDet = "#N/A";
-  $dominfoDKIMDet = "#N/A";
-  $dominfoDMARCDet = "#N/A";
+  $dominfoDKIM = "#N/A"
+  $dominfoDMARC = "#N/A"
+  $dominfoSTARTTLS = "#N/A"
+  $dominfoMXDet = "#N/A"
+  $dominfoSPFDet = "#N/A"
+  $dominfoDKIMDet = "#N/A"
+  $dominfoDMARCDet = "#N/A"
     
  }
  $row.Domain = $domainname
@@ -522,6 +597,7 @@ ForEach ( $domainname in $arrDomains )
  $row.HasSPF = $dominfoSPF
  $row.HasDKIM = $dominfoDKIM
  $row.HasDMARC = $dominfoDMARC
+ $row.HasStartTLS = $dominfoSTARTTLS
  $row.MXRecord = $dominfoMXDet
  $row.SPFRecord = $dominfoSPFDet
  $row.DKIMSelector = $DKIMSelector -Join "/"
