@@ -322,6 +322,7 @@ Function fnCheckSTARTTLS {
             Return $False
         }
 
+        $reader.DiscardBufferedData() #Clear reader
         $writer.WriteLine("EHLO mail")
         $ehloResp = $reader.ReadLine()
         if (!$ehloResp.StartsWith("250")) {
@@ -329,10 +330,11 @@ Function fnCheckSTARTTLS {
             Return $False
         }
 
+        $reader.DiscardBufferedData() #Clear reader
         $writer.WriteLine("STARTTLS")
         $startTLSResp = $reader.ReadLine()
-        if (!$startTLSResp.StartsWith("250")) {
-            Write-Verbose "Invalid EHLO response"
+        if (!$startTLSResp.StartsWith("220")) {
+            Write-Verbose "Invalid STARTTLS response"
             Return $False
         }
         Return $True
