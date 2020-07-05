@@ -29,6 +29,7 @@
   HasSPF       : True
   HasDKIM      : #N/A
   HasDMARC     : False
+  HasStartTLS  : #N/A
   MXRecord     : Null MX (RFC7505)
   SPFRecord    : v=spf1 -all
   DKIMSelector : #N/A
@@ -36,38 +37,46 @@
   DMARCRecord  : False
  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -CheckDKIM 1 | Format-Table -AutoSize
-  Domain      HasMX HasSPF HasDKIM HasDMARC MXRecord          SPFRecord   DKIMSelector        DKIMRecord DMARCRecord
-  ------      ----- ------ ------- -------- --------          ---------   ------------        ---------- -----------
-  example.com  True   True   False    False Null MX (RFC7505) v=spf1 -all Selector1/Selector2      False       False
- .EXAMPLE
+  Domain      HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord          SPFRecord   DKIMSelector        DKIMRecord
+  ------      ----- ------ ------- -------- ----------- --------          ---------   ------------        ----------
+  example.com  True   True   False    False #N/A        Null MX (RFC7505) v=spf1 -all Selector1/Selector2      False 
+  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 github.com -CheckDKIM 1 -DKIMSelector google
+  [Notice: ] Could not connect to the SMTP Server alt3.aspmx.l.google.com                                                 
+
   Domain       : github.com
   HasMX        : True
   HasSPF       : True
   HasDKIM      : True
   HasDMARC     : True
-  MXRecord     : aspmx.l.google.com,alt3.aspmx.l.google.com,alt2.aspmx.l.google.com,alt1.aspmx.l.google.com,alt4.aspmx.l.google.com
-  SPFRecord    : v=spf1 ip4:192.30.252.0/22 ip4:208.74.204.0/22 ip4:46.19.168.0/23 include:_spf.google.com include:esp.github.com include:_spf.createsend.com include:servers.mcsv.net ~all
+  HasStartTLS  : False
+  MXRecord     : alt3.aspmx.l.google.com,alt2.aspmx.l.google.com,aspmx.l.google.com,alt1.aspmx.l.google.com,alt4.aspmx.l.
+                 google.com
+  SPFRecord    : v=spf1 ip4:192.30.252.0/22 ip4:208.74.204.0/22 ip4:46.19.168.0/23 include:_spf.google.com include:esp.gi
+                 thub.com include:_spf.createsend.com include:servers.mcsv.net ~all
   DKIMSelector : google
-  DKIMRecord   : [google]v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCNcsfnwX5c/B/MF/7J6/kDTO7rl08yEcrDLMDPp2YONNwqqpZxRSNt+cI8am8ixoPQ0V0bMVu1mYwZEV59u96vZFjVQIkfh08Y7q1jSjjd35FoaQl4YS5H4q6C4ARaC70jf2/NEDUUJFImkPKUZ42SV7MWQs2NnAEOXNQwvWmbCwIDAQAB
+  DKIMRecord   : [google]v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCNcsfnwX5c/B/MF/7J6/kDTO7rl08yEcrDLMDPp2
+                 YONNwqqpZxRSNt+cI8am8ixoPQ0V0bMVu1mYwZEV59u96vZFjVQIkfh08Y7q1jSjjd35FoaQl4YS5H4q6C4ARaC70jf2/NEDUUJFImkP
+                 KUZ42SV7MWQs2NnAEOXNQwvWmbCwIDAQAB
   DMARCRecord  : v=DMARC1; p=none; rua=mailto:dmarc@github.com
 .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose | FT
   VERBOSE:  Script Get-Domain-MailInfo.ps1
-  VERBOSE:  Last Updated 2019-10-07
+  VERBOSE:  Last Updated 2020-07-05
   VERBOSE:
   VERBOSE:  Checking 1 domain(s)
   VERBOSE: [INVALID:] Domain lookup failed - probable invalid domain name (-invalid.name)
 
-  Domain        HasMX HasSPF HasDKIM HasDMARC MXRecord SPFRecord DKIMSelector DKIMRecord DMARCRecord
-  ------        ----- ------ ------- -------- -------- --------- ------------ ---------- -----------
-  -invalid.name #N/A  #N/A   #N/A    #N/A     #N/A     #N/A      #N/A         #N/A       #N/A
+  Domain        HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord SPFRecord DKIMSelector DKIMRecord
+  ------        ----- ------ ------- -------- ----------- -------- --------- ------------ ----------
+  -invalid.name #N/A  #N/A   #N/A    #N/A     #N/A        #N/A     #N/A      #N/A         #N/A
+
 .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Path .\DomainList.txt | FT
-  Domain       HasMX HasSPF HasDKIM HasDMARC MXRecord          SPFRecord   DKIMSelector DKIMRecord DMARCRecord
-  ------       ----- ------ ------- -------- --------          ---------   ------------ ---------- -----------
-  example.com   True   True #N/A       False Null MX (RFC7505) v=spf1 -all #N/A         #N/A             False
-  -example.com  #N/A   #N/A #N/A        #N/A #N/A              #N/A        #N/A         #N/A              #N/A
+  Domain       HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord          SPFRecord   DKIMSelector DKIMRecord
+  ------       ----- ------ ------- -------- ----------- --------          ---------   ------------ ----------
+  example.com   True   True #N/A       False #N/A        Null MX (RFC7505) v=spf1 -all #N/A         #N/A
+  -example.com  #N/A   #N/A #N/A        #N/A #N/A        #N/A              #N/A        #N/A         #N/A
 #>
 [CmdletBinding(
   PositionalBinding=$false,DefaultParameterSetName="Name")]
@@ -94,6 +103,8 @@
     # Default is to overwrite the .CSV file.
     # Note: The script will check for file lock and softfail.
     #       Remember to close the CSV file before running the script again.
+    # Default is to check StartTLS (RFC3207)
+    [bool]$CheckStartTLS=$true,
     [bool]$Overwrite=$true,
     # The UseHeader line preference follows Overwrite unless specified
     [bool]$UseHeader=$Overwrite,
@@ -455,7 +466,7 @@ If ($arrDomains.Count -eq 0)
 
 # Verbose Script information on Script version and parameters
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
-Write-Verbose " Last Updated 2019-10-07"
+Write-Verbose " Last Updated 2020-07-05"
 Write-Verbose ""
 Write-Verbose " Checking $($arrDomains.Count) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
@@ -510,7 +521,7 @@ ForEach ( $domainname in $arrDomains )
   # Next we try to resolve the MX and SPF records
   $dominfoMXDet = fnMXRecord -domname $domainName
   # Next check if the MX supports StartTLS
-  If ($dominfoMXDet -ne $False) {
+  If ($CheckStartTLS -and $dominfoMXDet -ne $False) {
     If (!$dominfoMXDet.StartsWith("Null MX") -and !$dominfoMXDet.StartsWith("[Invalid:]")) {
         $dominfoSTARTTLS = fnCheckSTARTTLS -mxHost $dominfoMXDet.Split(',')[0] #use the first MX
     } else {
@@ -572,6 +583,7 @@ ForEach ( $domainname in $arrDomains )
     $dominfoMX = $false
     $dominfoDKIM = "#N/A"
     $dominfoDMARC = "#N/A"
+    $dominfoSTARTTLS = "#N/A"
     $dominfoMXDet = "#N/A"
     $dominfoDKIMDet = "#N/A"
     $dominfoDMARCDet = "#N/A"
