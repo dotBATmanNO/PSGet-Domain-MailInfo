@@ -447,7 +447,7 @@ $bolCSV = $true                                      # Bolean value used to dete
 If ($CheckDKIM -eq $False) { $DKIMSelector = "#N/A"} # If DKIM is not checked we do not need a selector
 
 # Header line using quotes and system default list separator character
-$arrheader = """Domain", "HasMX", "HasSPF", "HasDKIM", "HasDMARC", 
+$arrheader = """Domain", "HasMX", "HasSPF", "HasDKIM", "HasDMARC", "HasStartTLS",
              "MXRecord", "SPFRecord", "DKIMSelector", "DKIMRecord", "DMARCRecord"""
 $headerline = $arrheader -join """$($charlistsep)"""
 
