@@ -100,11 +100,11 @@
     #       This is the default used by Microsoft Exchange online.
     #       You could try -DKIMSelector google for G-Suite
     [string[]]$DKIMSelector=@("Selector1", "Selector2"),
+    # Default is to check StartTLS (RFC3207)
+    [bool]$CheckStartTLS=$true,
     # Default is to overwrite the .CSV file.
     # Note: The script will check for file lock and softfail.
     #       Remember to close the CSV file before running the script again.
-    # Default is to check StartTLS (RFC3207)
-    [bool]$CheckStartTLS=$true,
     [bool]$Overwrite=$true,
     # The UseHeader line preference follows Overwrite unless specified
     [bool]$UseHeader=$Overwrite,
