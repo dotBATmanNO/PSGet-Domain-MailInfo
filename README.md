@@ -74,9 +74,9 @@ SYNOPSIS
     - Uses System Default List Separator Character and Quotes to simplify CSV processing.
 
 SYNTAX
-    C:\Get-Domain-MailInfo.ps1 [-Name <String[]>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-CheckStartTLS <Boolean>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [<CommonParameters>]
+    C:\Get-Domain-MailInfo.ps1 [-Name <String[]>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-DNSServer <String>] [-ForceDNSServer <Boolean>] [-CheckStartTLS <Boolean>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [<CommonParameters>]
 
-    C:\Get-Domain-MailInfo.ps1 [[-Name] <String[]>] [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-CheckStartTLS <Boolean>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [<CommonParameters>]
+    C:\Get-Domain-MailInfo.ps1 [[-Name] <String[]>] [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-DNSServer <String>] [-ForceDNSServer <Boolean>] [-CheckStartTLS <Boolean>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [<CommonParameters>]
 
 PARAMETERS
     -Name <String[]>
@@ -144,6 +144,24 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                True
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
+    -DNSServer <String>
+        Default is to use system default DNS Server
+
+        Required?                    false
+        Position?                    named
+        Default value
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
+    -ForceDNSServer <Boolean>
+        Default is to check if DNS server is working
+
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Accept wildcard characters?  false
 
