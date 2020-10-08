@@ -542,8 +542,9 @@ ForEach ( $domainname in $arrDomains )
  If (fnIsDomain -domname $domainname)
  {
   # Next we try to resolve the MX and SPF records
-  $dominfoMXDet = fnMXRecord -domname $domainName
-  # Next check if the MX supports StartTLS
+  $dominfoMXDet = fnMXRecord -domname $domainName  If ( $dominfoMXDet ) { $dominfoMX = $true } Else {$dominfoMX = $false}
+
+  # If there is an MX record we check if the MX supports StartTLS
   If ($CheckStartTLS -and $dominfoMXDet -ne $False) {
     If (!$dominfoMXDet.StartsWith("Null MX") -and !$dominfoMXDet.StartsWith("[Invalid:]")) {
         $dominfoSTARTTLS = fnCheckSTARTTLS -mxHost $dominfoMXDet.Split(',')[0] #use the first MX
@@ -554,7 +555,6 @@ ForEach ( $domainname in $arrDomains )
     $dominfoSTARTTLS = "#N/A"
   }
 
-  # We check SPF even if there is no MX record.
   If ($CheckSPF) 
   { 
    $dominfoSPFDet = fnSPFRecord -DomName $domainName 
@@ -565,53 +565,34 @@ ForEach ( $domainname in $arrDomains )
    $dominfoSPF = $dominfoSPFDet = "#N/A"
   }
 
-  If ($dominfoMXDet)
+  # Done with DKIM - Let's check DMARC
+  If ($CheckDMARC)
   {
-   # Got MX - let's check DKIM
-   $dominfoMX = $true
-   If ($CheckDKIM)
+   $dominfoDMARCDet = fnDMARCRecord -domname $domainName
+   If ($dominfoDMARCDet) { $dominfoDMARC = $true } else { $dominfoDMARC = $dominfoDMARCDet = $false }
+  }
+  else
+  {
+   $dominfoDMARC = $dominfoDMARCDet = "#N/A" 
+  }
+  
+  If ($CheckDKIM)
+  {
+   $dominfoDKIMDet = fnDKIMRecord -Domname $domainName -Selector $DKIMSelector
+   If ($dominfoDKIMDet -match "DKIM1")
    {
-    $dominfoDKIMDet = fnDKIMRecord -Domname $domainName -Selector $DKIMSelector
-    If ($dominfoDKIMDet -match "DKIM1")
-    {
-     $dominfoDKIM = $true
-    }
-    Else
-    {
-     $dominfoDKIM = $false
-    }
+    $dominfoDKIM = $true
    }
-   else
+   Else
    {
-    # Not checking DKIM, let's return #N/A
-    $dominfoDKIM = $dominfoDKIMDet = "#N/A"
-   } # End DKIM Check
-
-   # Done with DKIM - Let's check DMARC
-   If ($CheckDMARC)
-   {
-    $dominfoDMARCDet = fnDMARCRecord -domname $domainName
-    If ($dominfoDMARCDet) { $dominfoDMARC = $true } else { $dominfoDMARC = $dominfoDMARCDet = $false }
-   }
-   else
-   {
-    $dominfoDMARC = $false
-    $dominfoDMARCDet = "#N/A" 
+    $dominfoDKIM = $false
    }
   }
-  else 
+  else
   {
-    
-    # No MX record, set other variables to #N/A
-    $dominfoMX = $false
-    $dominfoDKIM = "#N/A"
-    $dominfoDMARC = "#N/A"
-    $dominfoSTARTTLS = "#N/A"
-    $dominfoMXDet = "#N/A"
-    $dominfoDKIMDet = "#N/A"
-    $dominfoDMARCDet = "#N/A"
-    
-  }
+   # Not checking DKIM, let's return #N/A
+   $dominfoDKIM = $dominfoDKIMDet = "#N/A"
+  } # End DKIM Check
 
  }
 
