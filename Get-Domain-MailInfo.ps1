@@ -100,6 +100,10 @@
     #       This is the default used by Microsoft Exchange online.
     #       You could try -DKIMSelector google for G-Suite
     [string[]]$DKIMSelector=@("Selector1", "Selector2"),
+    # Default is to use system default DNS Server
+    [string]$DNSServer,
+    # Default is to check if DNS server is working
+    [bool]$ForceDNSServer=$false,
     # Default is to check StartTLS (RFC3207)
     [bool]$CheckStartTLS=$true,
     # Default is to overwrite the .CSV file.
@@ -118,7 +122,7 @@ Function fnIsDomain {
    
    Try
    {
-    $DNSRecord = Resolve-DnsName -Name $domname -DnsOnly -ErrorAction Stop 2> $null
+    $DNSRecord = Resolve-DnsName -Name $domname -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -146,7 +150,7 @@ Function fnMXRecord {
    
    Try
    {
-    $MXRecord = Resolve-DnsName -Name $domname -Type MX -DnsOnly -ErrorAction Stop 2> $null
+    $MXRecord = Resolve-DnsName -Name $domname -Type MX -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -185,7 +189,7 @@ Function fnSPFRecord {
   param ([string]$DomName)
    Try
    {
-    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT -DnsOnly -ErrorAction Stop 2> $null
+    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -208,7 +212,7 @@ Function fnDKIMRecord {
   # This is an easy but not guaranteed way to tell if any Selector(s) exist.
   Try 
   {
-   $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -ErrorAction Stop 2> $null
+   $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
   }
   Catch
   {
@@ -231,7 +235,7 @@ Function fnDKIMRecord {
    
    Try 
    {
-    $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT -DnsOnly -ErrorAction Stop 2> $null
+    $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -262,7 +266,7 @@ Function fnDMARCRecord {
 
    Try
    {
-    $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT -DnsOnly -ErrorAction Stop 2> $null
+    $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -385,8 +389,6 @@ Function fnCheckCSVFileLock {
 
 }
 
-
-
 Function fnBuildGraph {
 
   param ([string]$PNGFileName, [string]$ProtectionType, $ProtectionData)
@@ -442,6 +444,29 @@ $pngFile = "$ScriptPath\DomainResults"               # Place the DomainResults_P
 $bolCSV = $true                                      # Bolean value used to detect If CSV file is locked
 If ($CheckDKIM -eq $False) { $DKIMSelector = "#N/A"} # If DKIM is not checked we do not need a selector
 
+If ($DNSServer)                                      # Using specific DNS server for queries
+{
+  If (-Not($ForceDNSServer))                         # Should we check if DNS server is able to resolve root DNS server?
+  {
+    Try
+    {
+      $DNSRecord = Resolve-DnsName -Name "a.root-servers.net" -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+    }
+    Catch
+    {
+      # DNS Server was not found
+      Write-Host "Server $DNSServer is not able to resolve a.root-servers.net - is this DNS server working?"
+      Write-Host "Note: Override this check with -ForceDNSServer 1"
+      Break  
+    }
+  }
+  $DNSServer = @('$(DNSServer)')
+}
+else 
+{
+  $DNSServer = @()                                   # Use System Default DNS Server
+}
+
 # Header line using quotes and system default list separator character
 $arrheader = """Domain", "HasMX", "HasSPF", "HasDKIM", "HasDMARC", "HasStartTLS",
              "MXRecord", "SPFRecord", "DKIMSelector", "DKIMRecord", "DMARCRecord"""
@@ -462,7 +487,7 @@ If ($arrDomains.Count -eq 0)
 
 # Verbose Script information on Script version and parameters
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
-Write-Verbose " Last Updated 2020-07-05"
+Write-Verbose " Last Updated 2020-10-08"
 Write-Verbose ""
 Write-Verbose " Checking $($arrDomains.Count) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
