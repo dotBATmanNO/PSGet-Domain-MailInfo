@@ -195,7 +195,7 @@ Function fnSPFRecord {
   
    If ($SPFRec) { Return $SPFRec -join '' }
     
-   # No v=SPF1 txt record was found
+   # No v=SPF1 txt record was found, signal with $false
    Return $False
    
 } # End Function fnSPFRecord
