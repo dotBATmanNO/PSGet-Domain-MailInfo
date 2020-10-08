@@ -191,15 +191,11 @@ Function fnSPFRecord {
    {
     Return $False
    }
-   If ($SPFRecord.Strings)
-   { 
-    $SPFRec = $SPFRecord.Strings | Where-Object -FilterScript { $_ -like "v=spf1*" }
+   $spfrec = ($spfrecord | Where-Object {$_.strings -like 'v=spf1*'}).text
+  
+   If ($SPFRec) { Return $SPFRec -join '' }
     
-    If ($SPFRec) { Return $SPFRec }
-    
-   }
-
-   # No v=SPF1 txt record was found
+   # No v=SPF1 txt record was found, signal with $false
    Return $False
    
 } # End Function fnSPFRecord
