@@ -543,7 +543,8 @@ ForEach ( $domainname in $arrDomains )
  {
   # Next we try to resolve the MX and SPF records
   $dominfoMXDet = fnMXRecord -domname $domainName  If ( $dominfoMXDet ) { $dominfoMX = $true } Else {$dominfoMX = $false}
-
+  If ($dominfoMXDet) { $dominfoMX = $True } else { $dominfoMX = $false }
+  
   # If there is an MX record we check if the MX supports StartTLS
   If ($CheckStartTLS -and $dominfoMXDet -ne $False) {
     If (!$dominfoMXDet.StartsWith("Null MX") -and !$dominfoMXDet.StartsWith("[Invalid:]")) {
