@@ -116,13 +116,15 @@
     # Will create one .PNG pie-chart per protection type; HasSPF/HasDKIM/HasDMARC.
     [bool]$CreateGraphs=$False)
 
+$global:DNSServerToUse = @()
+
 Function fnIsDomain {
 
   param ([string]$domname)
-   
    Try
    {
-    $DNSRecord = Resolve-DnsName -Name $domname -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+    
+    $DNSRecord = Resolve-DnsName -Name $domname -DnsOnly -Server $DNSServerToUse -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -150,7 +152,7 @@ Function fnMXRecord {
    
    Try
    {
-    $MXRecord = Resolve-DnsName -Name $domname -Type MX -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+    $MXRecord = Resolve-DnsName -Name $domname -Type MX -DnsOnly -Server $DNSServerToUse -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -189,7 +191,7 @@ Function fnSPFRecord {
   param ([string]$DomName)
    Try
    {
-    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+    $SPFRecord = Resolve-DnsName -Name $domname -Type TXT -DnsOnly -Server $DNSServerToUse -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -212,7 +214,7 @@ Function fnDKIMRecord {
   # This is an easy but not guaranteed way to tell if any Selector(s) exist.
   Try 
   {
-   $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+   $strDKIMRecord = Resolve-DnsName -Name "_domainkey.$($domname)" -DnsOnly -Server $DNSServerToUse -ErrorAction Stop 2> $null
   }
   Catch
   {
@@ -235,7 +237,7 @@ Function fnDKIMRecord {
    
    Try 
    {
-    $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+    $strDKIMRecord = Resolve-DnsName -Name $strDKIMrec -Type TXT -DnsOnly -Server $DNSServerToUse -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -266,7 +268,7 @@ Function fnDMARCRecord {
 
    Try
    {
-    $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT -DnsOnly -Server $DNSServer -ErrorAction Stop 2> $null
+    $DMARCRecord = Resolve-DnsName -Name _dmarc.$domname -Type TXT -DnsOnly -Server $DNSServerToUse -ErrorAction Stop 2> $null
    }
    Catch
    {
@@ -460,11 +462,11 @@ If ($DNSServer)                                      # Using specific DNS server
       Break  
     }
   }
-  $DNSServer = @('$(DNSServer)')
+  $DNSServerToUse = @($DNSServer)
 }
 else 
 {
-  $DNSServer = @()                                   # Use System Default DNS Server
+  $DNSServerToUse = @()                                   # Use System Default DNS Server
 }
 
 # Header line using quotes and system default list separator character
