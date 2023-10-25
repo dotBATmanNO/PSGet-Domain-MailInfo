@@ -489,7 +489,7 @@ If ($arrDomains.Count -eq 0)
 
 # Verbose Script information on Script version and parameters
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
-Write-Verbose " Last Updated 2020-10-08"
+Write-Verbose " Last Updated 2023-10-25"
 Write-Verbose ""
 Write-Verbose " Checking $($arrDomains.Count) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
@@ -542,7 +542,7 @@ ForEach ( $domainname in $arrDomains )
  If (fnIsDomain -domname $domainname)
  {
   # Next we try to resolve the MX and SPF records
-  $dominfoMXDet = fnMXRecord -domname $domainName  If ( $dominfoMXDet ) { $dominfoMX = $true } Else {$dominfoMX = $false}
+  $dominfoMXDet = fnMXRecord -domname $domainName
   If ($dominfoMXDet) { $dominfoMX = $True } else { $dominfoMX = $false }
   
   # If there is an MX record we check if the MX supports StartTLS
