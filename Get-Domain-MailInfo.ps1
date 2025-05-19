@@ -1,4 +1,4 @@
-﻿<#
+<#
  .SYNOPSIS
   Get MailInfo for domain(s).
 
@@ -35,13 +35,15 @@
   DKIMSelector : #N/A
   DKIMRecord   : #N/A
   DMARCRecord  : False
+  DMARCPolicy  : none
+  PolicyChecks : #N/A
  .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -CheckDKIM 1 | Format-Table -AutoSize
-  Domain      HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord          SPFRecord   DKIMSelector        DKIMRecord
-  ------      ----- ------ ------- -------- ----------- --------          ---------   ------------        ----------
-  example.com  True   True   False    False #N/A        Null MX (RFC7505) v=spf1 -all Selector1/Selector2      False 
+  Domain      HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord          SPFRecord   DKIMSelector        DKIMRecord DMARCPolicy PolicyChecks
+  ------      ----- ------ ------- -------- ----------- --------          ---------   ------------        ---------- ----------- ------------
+  example.com  True   True   False    False #N/A        Null MX (RFC7505) v=spf1 -all Selector1/Selector2      False #N/A        #N/A
   .EXAMPLE
-  .\Get-Domain-MailInfo.ps1 github.com -CheckDKIM 1 -DKIMSelector google
+  .\Get-Domain-MailInfo.ps1 github.com -CheckDKIM 1 -DKIMSelector google -PolicyChecks Microsoft,
   [Notice: ] Could not connect to the SMTP Server alt3.aspmx.l.google.com                                                 
 
   Domain       : github.com
@@ -50,33 +52,38 @@
   HasDKIM      : True
   HasDMARC     : True
   HasStartTLS  : False
-  MXRecord     : alt3.aspmx.l.google.com,alt2.aspmx.l.google.com,aspmx.l.google.com,alt1.aspmx.l.google.com,alt4.aspmx.l.
-                 google.com
-  SPFRecord    : v=spf1 ip4:192.30.252.0/22 ip4:208.74.204.0/22 ip4:46.19.168.0/23 include:_spf.google.com include:esp.gi
-                 thub.com include:_spf.createsend.com include:servers.mcsv.net ~all
+  MXRecord     : aspmx.l.google.com,alt2.aspmx.l.google.com,alt1.aspmx.l.google.com,alt4.aspmx.l.google.com,alt3.aspmx.l.google.com
+  SPFRecord    : v=spf1 ip4:192.30.252.0/22 include:_netblocks.google.com include:_netblocks2.google.com include:_netblocks3.google.com
+                 include:spf.protection.outlook.com include:mail.zendesk.com include:_spf.salesforce.com include:servers.mcsv.net
+                 include:mktomail.com ip4:166.78.69.169 ip4:166.78.69.170 ip4:166.78.71.131 ip4:167.89.101.2 ip4:167.89.101.192/28
+                 ip4:192.254.112.60 ip4:192.254.112.98/31 ip4:192.254.113.10 ip4:192.254.113.101 ip4:192.254.114.176
+                 ip4:62.253.227.114 ~all
   DKIMSelector : google
-  DKIMRecord   : [google]v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCNcsfnwX5c/B/MF/7J6/kDTO7rl08yEcrDLMDPp2
-                 YONNwqqpZxRSNt+cI8am8ixoPQ0V0bMVu1mYwZEV59u96vZFjVQIkfh08Y7q1jSjjd35FoaQl4YS5H4q6C4ARaC70jf2/NEDUUJFImkP
-                 KUZ42SV7MWQs2NnAEOXNQwvWmbCwIDAQAB
-  DMARCRecord  : v=DMARC1; p=none; rua=mailto:dmarc@github.com
+  DKIMRecord   : [google]v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj6T5sl/
+                 RwdSqGoYWaWaFbS2UAeyPrEmd0gogocmRfS441qwR8/0KB81Hw89P0l4YiFRrXYk7NVIGfyCRHAYYZUzCkGeOysI2EjgzLFhd/NEsbRzOEc/
+                 kWkK/RO6JFq/5lOn6M9AZw/ap9tds4JG9ApgNNdSpPxp9DmvpsOSgNMVflRxQFrk3kdS4RNAPKu/
+  DMARCRecord  : v=DMARC1; p=reject; pct=100; rua=mailto:dmarc@github.com
+  DMARCPolicy  : p=reject
+  PolicyChecks : [Microsoft]Unqualified(SPFTrue;DKIMTrue;DMARCTrue;DMARCStrictFalse);[Google]Qualified(SPFTrue;DKIMTrue;DMARCTrue)
+
 .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Name "-invalid.name" -verbose | FT
   VERBOSE:  Script Get-Domain-MailInfo.ps1
-  VERBOSE:  Last Updated 2020-07-05
+  VERBOSE:  Last Updated 20250518-18May2025
   VERBOSE:
   VERBOSE:  Checking 1 domain(s)
   VERBOSE: [INVALID:] Domain lookup failed - probable invalid domain name (-invalid.name)
 
-  Domain        HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord SPFRecord DKIMSelector DKIMRecord
-  ------        ----- ------ ------- -------- ----------- -------- --------- ------------ ----------
-  -invalid.name #N/A  #N/A   #N/A    #N/A     #N/A        #N/A     #N/A      #N/A         #N/A
+  Domain        HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord SPFRecord DKIMSelector DKIMRecord DMARCPolicy PolicyChecks
+  ------        ----- ------ ------- -------- ----------- -------- --------- ------------ ---------- ----------- ------------
+  -invalid.name #N/A  #N/A   #N/A    #N/A     #N/A        #N/A     #N/A      #N/A         #N/A       none        #N/A
 
 .EXAMPLE
   .\Get-Domain-MailInfo.ps1 -Path .\DomainList.txt | FT
-  Domain       HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord          SPFRecord   DKIMSelector DKIMRecord
-  ------       ----- ------ ------- -------- ----------- --------          ---------   ------------ ----------
-  example.com   True   True #N/A       False #N/A        Null MX (RFC7505) v=spf1 -all #N/A         #N/A
-  -example.com  #N/A   #N/A #N/A        #N/A #N/A        #N/A              #N/A        #N/A         #N/A
+  Domain       HasMX HasSPF HasDKIM HasDMARC HasStartTLS MXRecord          SPFRecord   DKIMSelector DKIMRecord DMARCPolicy PolicyChecks
+  ------       ----- ------ ------- -------- ----------- --------          ---------   ------------ ---------- ----------- ------------
+  example.com   True   True #N/A       False #N/A        Null MX (RFC7505) v=spf1 -all #N/A         #N/A       p=reject    #N/A
+  -example.com  #N/A   #N/A #N/A        #N/A #N/A        #N/A              #N/A        #N/A         #N/A       #N/A        #N/A
 #>
 [CmdletBinding(
   PositionalBinding=$false,DefaultParameterSetName="Name")]
@@ -114,7 +121,11 @@
     [bool]$UseHeader=$Overwrite,
     # The CreateGraph option is set to False by default as it is just a nice-to-have.
     # Will create one .PNG pie-chart per protection type; HasSPF/HasDKIM/HasDMARC.
-    [bool]$CreateGraphs=$False)
+    [bool]$CreateGraphs=$False,
+    # Policy Check tool was created to help validate if the email polices for
+    # a domain pass the requirements of named service providers. E.g. Microsoft.)
+    # Specify the Policy Checks to perform separated by comma.
+    [string[]]$PolicyChecks)
 
 $global:DNSServerToUse = @()
 
@@ -140,7 +151,7 @@ Function fnIsDomain {
     # Source https://stackoverflow.com/questions/11809631/ 
     If ($domname -notmatch "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)")
     {
-     Write-Verbose "[INVALID:] Domain lookup failed - probable invalid domain name ($domname)"
+     Write-Verbose "[INVALID] Domain lookup failed - probable invalid domain name ($domname)"
     }
     Return $False
    }
@@ -311,7 +322,7 @@ Function fnCheckSTARTTLS {
             Write-Verbose "Connection to $mxHost on port 25 timed out"
             throw "Timeout"
         }
-        #Error out of the server refuses our connection attempt
+        #Error out if the server refuses our connection attempt
         If(!$conn.Connected) {
             Write-Verbose "Connection to $mxHost on port 25 unsuccessful"
             throw "Connection to $mxHost on port 25 unsuccessful"
@@ -357,7 +368,6 @@ Function fnCheckSTARTTLS {
         Return $False
     }
 } # End Function fnCheckSTARTTLS
-
 
 Function fnCheckCSVFileLock {
   param ([string]$CSVFileName, [bool]$CreateFile)
@@ -471,7 +481,7 @@ else
 
 # Header line using quotes and system default list separator character
 $arrheader = """Domain", "HasMX", "HasSPF", "HasDKIM", "HasDMARC", "HasStartTLS",
-             "MXRecord", "SPFRecord", "DKIMSelector", "DKIMRecord", "DMARCRecord"""
+             "MXRecord", "SPFRecord", "DKIMSelector", "DKIMRecord", "DMARCRecord", "DMARCPolicy", "PolicyChecks"""
 $headerline = $arrheader -join """$($charlistsep)"""
 
 # Use array, even If only one domain has been provided
@@ -489,7 +499,7 @@ If ($arrDomains.Count -eq 0)
 
 # Verbose Script information on Script version and parameters
 Write-Verbose " Script Get-Domain-MailInfo.ps1"
-Write-Verbose " Last Updated 2023-10-25"
+Write-Verbose " Last Updated 2025-05-13"
 Write-Verbose ""
 Write-Verbose " Checking $($arrDomains.Count) domain(s)"
 If ($CheckDKIM) { Write-Verbose " .. checking DKIM using selector $($DKIMSelector)" }
@@ -525,12 +535,15 @@ $rowhash = [ordered]@{
   DKIMSelector = ""
   DKIMRecord = ""
   DMARCRecord = ""
+  DMARCPolicy = ""
+  PolicyChecks = ""
  }
 
 [int]$iDomain = 0
 # Start enumerating the domain(s) that have been nominated
 ForEach ( $domainname in $arrDomains )
 {
+ Write-Verbose "Domain $($iDomain.ToString('00000')): $domainname"
  $iDomain++
  $iDomainPercent = $iDomain/$arrDomains.Count*100
  Write-Progress -Activity "Enumerating $($arrDomains.Count) domain(s)" -Id 1 -PercentComplete $iDomainPercent -CurrentOperation "Checking $($domainname)"
@@ -549,6 +562,7 @@ ForEach ( $domainname in $arrDomains )
   If ($CheckStartTLS -and $dominfoMXDet -ne $False) {
     If (!$dominfoMXDet.StartsWith("Null MX") -and !$dominfoMXDet.StartsWith("[Invalid:]")) {
         $dominfoSTARTTLS = fnCheckSTARTTLS -mxHost $dominfoMXDet.Split(',')[0] #use the first MX
+        Write-Verbose "StartTLS: Check returned error $($Error[0].TargetObject)"
     } else {
         $dominfoSTARTTLS = "#N/A"
     }
@@ -570,11 +584,21 @@ ForEach ( $domainname in $arrDomains )
   If ($CheckDMARC)
   {
    $dominfoDMARCDet = fnDMARCRecord -domname $domainName
-   If ($dominfoDMARCDet) { $dominfoDMARC = $true } else { $dominfoDMARC = $dominfoDMARCDet = $false }
+   If ($dominfoDMARCDet) 
+   { 
+    $dominfoDMARC = $true
+    $dominfoDMARCPolicy = (Select-String -InputObject $dominfoDMARCDet -Pattern "p=[a-z]*").Matches[0].Value
+    Write-Verbose $dominfoDMARCPolicy
+    
+   }
+   Else
+   {
+    $dominfoDMARC = $dominfoDMARCDet = $dominfoDMARCPolicy = $false 
+   }
   }
-  else
+  Else
   {
-   $dominfoDMARC = $dominfoDMARCDet = "#N/A" 
+   $dominfoDMARC = $dominfoDMARCDet = $dominfoDMARCPolicy = "#N/A" 
   }
   
   If ($CheckDKIM)
@@ -595,8 +619,49 @@ ForEach ( $domainname in $arrDomains )
    $dominfoDKIM = $dominfoDKIMDet = "#N/A"
   } # End DKIM Check
 
+  If ($PolicyChecks)
+  {
+    ForEach ($PolicyCheck in $PolicyChecks)
+    {
+        # Currently only qualified / unqualified = policies exist (or not)
+        # Future version (or by referring to other tools): Validate policies
+      
+      If ($PolicyCheck -match "Microsoft")
+      {
+        # Microsoft specific tests; 
+        # https://techcommunity.microsoft.com/blog/microsoftdefenderforoffice365blog
+        # See article "Strengthening-email-ecosystem-outlook’s-new-requirements-for-high‐volume-senders"
+        # SPF + DKIM + DMARC required
+        # DMARC policy: p=none (or better), strict SPF (aspf=s) and/or DKIM (adkim=s) alignment
+        
+        $dominfoDMARCStrict = $dominfoDMARCDet -match "/\a|adkim\=s|aspf\=s/g"
+        If ($dominfoSPF -and $dominfoDKIM -and $dominfoDMARC -and $dominfoDMARCStrict )
+        { $dominfoPolicyChecks += "[Microsoft]Qualified" }
+        else 
+        { $dominfoPolicyChecks += "[Microsoft]Unqualified" }
+      
+        $dominfoPolicyChecks += "(SPF$($dominfoSPF);DKIM$($dominfoDKIM);DMARC$($dominfoDMARC);DMARCStrict$($dominfoDMARCStrict));"
+        Clear-Variable dominfoDMARCStrict
+      }
+      ElseIf ($PolicyCheck -match "Google")
+      {
+        # Google specific tests;
+        # https://support.google.com/a/answer/14229414?sjid=13830646897479129552-EU
+        If ($dominfoSPF -and $dominfoDKIM -and $dominfoDMARC)
+        { $dominfoPolicyChecks += "[Google]Qualified" }
+        else 
+        { $dominfoPolicyChecks += "[Google]Unqualified" }
+      
+        $dominfoPolicyChecks += "(SPF$($dominfoSPF);DKIM$($dominfoDKIM);DMARC$($dominfoDMARC));"
+      
+      }
+      Else {$dominfoPolicyChecks += "[$PolicyCheck]NoTestAvailable(SPF$($dominfoSPF);DKIM$($dominfoDKIM);DMARC$($dominfoDMARC));"}
+      Write-Verbose "Policy Checks: $dominfoPolicyChecks"
+    }
+  }
+  else { $dominfoPolicyChecks = "#N/A;" }
+  $dominfoPolicyChecks = $dominfoPolicyChecks.TrimEnd(";")
  }
-
  else
  {
   # Domain lookup failed - set all columns but domainname to #N/A
@@ -609,6 +674,8 @@ ForEach ( $domainname in $arrDomains )
   $dominfoSPFDet = "#N/A"
   $dominfoDKIMDet = "#N/A"
   $dominfoDMARCDet = "#N/A"
+  $dominfoDMARCPolicy = "#N/A"
+  $dominfoPolicyChecks = "#N/A"
     
  }
  $row.Domain = $domainname
@@ -622,6 +689,8 @@ ForEach ( $domainname in $arrDomains )
  $row.DKIMSelector = $DKIMSelector -Join "/"
  $row.DKIMRecord = $dominfoDKIMDet
  $row.DMARCRecord = $dominfoDMARCDet
+ $row.DMARCPolicy = $dominfoDMARCPolicy
+ $row.PolicyChecks = $dominfoPolicyChecks
 
  $arroutput += $row
  Clear-Variable row
