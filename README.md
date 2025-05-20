@@ -78,13 +78,14 @@ SYNOPSIS
 
 
 SYNTAX
-    C:\Users\torv\OneDrive\Prog2025\PSGet-Domain-MailInfo\Get-Domain-MailInfo.ps1 [-Name <String[]>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean 
-    >] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-DNSServer <String>] [-ForceDNSServer <Boolean>] [-CheckStartTLS <Boolean>] [-Overwrit 
-    e <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [-PolicyChecks <String[]>] [<CommonParameters>]
+    .\Get-Domain-MailInfo.ps1 [-Name <String[]>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>] [-CheckDKIM <Boolean>]
+    [-DKIMSelector <String[]>] [-DNSServer <String>] [-ForceDNSServer <Boolean>] [-CheckStartTLS <Boolean>]
+    [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [-PolicyChecks <String[]>] [<CommonParameters>]
 
-    C:\Users\torv\OneDrive\Prog2025\PSGet-Domain-MailInfo\Get-Domain-MailInfo.ps1 [[-Name] <String[]>] [-Path <String>] [-CheckSPF <Boolean>] [- 
-    CheckDMARC <Boolean>] [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-DNSServer <String>] [-ForceDNSServer <Boolean>] [-CheckStartTLS <B 
-    oolean>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>] [-PolicyChecks <String[]>] [<CommonParameters>]
+    .\Get-Domain-MailInfo.ps1 [[-Name] <String[]>] [-Path <String>] [-CheckSPF <Boolean>] [-CheckDMARC <Boolean>]
+    [-CheckDKIM <Boolean>] [-DKIMSelector <String[]>] [-DNSServer <String>] [-ForceDNSServer <Boolean>]
+    [-CheckStartTLS <Boolean>] [-Overwrite <Boolean>] [-UseHeader <Boolean>] [-CreateGraphs <Boolean>]
+    [-PolicyChecks <String[]>] [<CommonParameters>]
 
 
 DESCRIPTION
