@@ -52,7 +52,7 @@ More information and examples can be found using Get-Help, see output below:
 PS C:\> Get-Help .\Get-Domain-MailInfo.ps1 -Full
                                                                                                                        
 NAME
-    C:\Users\torv\OneDrive\Prog2025\PSGet-Domain-MailInfo\Get-Domain-MailInfo.ps1
+    C:\PSGet-Domain-MailInfo\Get-Domain-MailInfo.ps1
 
 SYNOPSIS
     Get MailInfo for domain(s).
